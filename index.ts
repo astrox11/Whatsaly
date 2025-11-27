@@ -13,7 +13,7 @@ import makeWASocket, {
 import {
   log,
   parseEnv,
-  version,
+  version as bot_version,
   store,
   findEnvFile,
   Message,
@@ -21,8 +21,6 @@ import {
   Plugins,
 } from "./lib";
 import type { AnyMessageContent, CacheStore } from "baileys";
-
-log.info(`Activating Client ::: ${version}`);
 
 const config = findEnvFile("./");
 
@@ -37,10 +35,23 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+
+const hasInternet = async () => {
+  try {
+    const res = await fetch("https://www.google.com/generate_204");
+    return res.status === 204;
+  } catch {
+    return false;
+  }
+};
+
 const question = (text: string) =>
   new Promise<string>((resolve) => rl.question(text, resolve));
 
 const startSock = async () => {
+  log.info(`Astro Middleware ${bot_version}`);
+  if (!(await hasInternet()))
+    return log.warn("You are not connected to Internet");
   const { state, saveCreds } = await authstate();
   const { version, isLatest } = await fetchLatestBaileysVersion();
   log.info(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
@@ -106,6 +117,7 @@ const startSock = async () => {
           (lastDisconnect?.error as { output: { statusCode: number } })?.output
             ?.statusCode !== DisconnectReason.loggedOut
         ) {
+          cleanup();
           startSock();
         } else {
           log.error("Connection closed. You are logged out.");
@@ -134,24 +146,8 @@ const startSock = async () => {
 
         await p.load();
 
-        p.register({
-          pattern: "ping",
-          desc: "Ping, test",
-          category: "util",
-          exec: async (msg) => {
-            const start = Date.now();
-            const m = await msg.reply("pong");
-            const end = Date.now();
-            return await m.edit(`Pong!\n${end - start}ms`);
-          },
-        });
         await p.text();
       }
-    }
-
-    if (events["lid-mapping.update"]) {
-      const { pn, lid } = events["lid-mapping.update"];
-      await store.save_contact(pn, lid);
     }
   });
 
