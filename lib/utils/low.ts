@@ -1,12 +1,26 @@
-import { existsSync, readdirSync, readFileSync } from "fs";
-import { resolve } from "path";
+import { existsSync, readdirSync, readFileSync, statSync } from "fs";
+import { join, resolve } from "path";
 import { Worker } from "worker_threads";
 
 export function parseEnv(file: string): Record<string, string> {
   const result: Record<string, string> = {};
-  const fullPath = resolve(file);
+  let fullPath = resolve(file);
 
   if (!existsSync(fullPath)) return result;
+
+  try {
+    if (statSync(fullPath).isDirectory()) {
+      const candidate = join(fullPath, ".env");
+      if (!existsSync(candidate) || !statSync(candidate).isFile()) {
+        return result;
+      }
+      fullPath = candidate;
+    }
+  } catch {
+    return result;
+  }
+
+  if (!existsSync(fullPath) || !statSync(fullPath).isFile()) return result;
 
   const content = readFileSync(fullPath, "utf8");
   const lines = content.split(/\r\n|\n|\r/);
@@ -15,7 +29,6 @@ export function parseEnv(file: string): Record<string, string> {
     let line = raw.trim();
     if (!line || line.startsWith("#")) continue;
 
-    // allow "export KEY=VALUE" style
     if (line.startsWith("export ")) line = line.replace(/^export\s+/, "");
 
     const eqIndex = line.indexOf("=");
@@ -24,13 +37,11 @@ export function parseEnv(file: string): Record<string, string> {
     const key = line.slice(0, eqIndex).trim();
     let val = line.slice(eqIndex + 1).trim();
 
-    // If value is quoted, preserve inner string and unescape common sequences
     if (
       (val.startsWith('"') && val.endsWith('"')) ||
       (val.startsWith("'") && val.endsWith("'"))
     ) {
       val = val.slice(1, -1);
-      // Unescape common escape sequences
       val = val
         .replace(/\\n/g, "\n")
         .replace(/\\r/g, "\r")
@@ -39,7 +50,6 @@ export function parseEnv(file: string): Record<string, string> {
         .replace(/\\"/g, '"')
         .replace(/\\'/g, "'");
     } else {
-      // remove inline comments for unquoted values (first unescaped #)
       const hashIndex = val.indexOf("#");
       if (hashIndex !== -1) {
         val = val.slice(0, hashIndex).trim();

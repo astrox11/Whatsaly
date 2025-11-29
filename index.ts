@@ -138,11 +138,11 @@ export const startSock = async () => {
       }
       const isConnected = connection === "open";
 
-      if (isConnected && sock.user?.id) {
+      if (isConnected && sock.user.id) {
         log.info(`Connected to WhatsApp`);
         await sendMessageWTyping(
           { text: defaultWelcomeMessage },
-          sock.user?.id,
+          sock.user.id,
         );
       }
     }
