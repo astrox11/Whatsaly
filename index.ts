@@ -4,7 +4,6 @@ import makeWASocket, {
   makeCacheableSignalKeyStore,
   delay,
   type CacheStore,
-  useMultiFileAuthState,
 } from "baileys";
 import { Boom } from "@hapi/boom";
 import MAIN_LOGGER from "pino";
@@ -28,7 +27,7 @@ const logger = MAIN_LOGGER({ level: "silent" });
 const config = findEnvFile("./");
 
 const start = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState('test');
+  const { state, saveCreds } = await useBunqlAuth();
   const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({

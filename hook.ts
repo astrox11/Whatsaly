@@ -28,4 +28,6 @@ try {
       .join("\n"),
     "utf8",
   );
-} catch {}
+} catch {
+  /** */
+}

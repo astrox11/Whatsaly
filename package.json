@@ -1,6 +1,5 @@
 {
   "name": "bridge",
-  "module": "index.ts",
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -15,7 +14,9 @@
     "typescript": "latest"
   },
   "scripts": {
-    "start": "bun hook.js && bun run ./index.ts"
+    "start": "bun hook.ts && bun run ./index.ts",
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@realastrox11/bunql": "^0.0.6",
