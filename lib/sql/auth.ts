@@ -1,5 +1,6 @@
 import { bunql } from "./init";
 import {
+  BufferJSON,
   initAuthCreds,
   proto,
   type AuthenticationCreds,
@@ -7,14 +8,17 @@ import {
   type SignalDataTypeMap,
 } from "baileys";
 
-const Auth = bunql.define("auth", {
+export const Auth = bunql.define("auth", {
   name: { type: "TEXT", primary: true },
   data: { type: "TEXT" },
 });
 
 export const useBunqlAuth = async () => {
   const writeData = async (data: any, name: string) => {
-    const existing = Auth.find({ name }).run()[0];
+    const findResult = Auth.find({ name }).run();
+
+    const existing = findResult[0];
+
     if (existing) {
       Auth.update({ data: JSON.stringify(data) })
         .where("name", "=", name)
@@ -25,10 +29,10 @@ export const useBunqlAuth = async () => {
   };
 
   const readData = async (name: string) => {
-    const existing = Auth.find({ name }).run()[0];
-    if (existing) {
-      return JSON.parse(existing.data);
-    }
+    const findResult = Auth.find({ name }).run();
+    const existing = findResult[0];
+
+    if (existing) return JSON.parse(existing.data, BufferJSON.reviver);
     return null;
   };
 
@@ -48,29 +52,39 @@ export const useBunqlAuth = async () => {
           ids: string[],
         ) => {
           const data: { [_: string]: SignalDataTypeMap[T] } = {};
+
           await Promise.all(
             ids.map(async (id) => {
               let value = await readData(`${type}-${id}`);
 
               if (type === "app-state-sync-key" && value) {
+                console.log(
+                  `[keys.get] Converting app-state-sync-key for id: ${id}`,
+                );
                 value = proto.Message.AppStateSyncKeyData.fromObject(value);
               }
 
               data[id] = value;
             }),
           );
+
           return data;
         },
         set: async (data: SignalDataSet) => {
           const tasks: Promise<void>[] = [];
+
           for (const category in data) {
             for (const id in data[category as keyof SignalDataTypeMap]) {
               const value = data[category as keyof SignalDataTypeMap]![id];
               const name = `${category}-${id}`;
-              tasks.push(value ? writeData(value, name) : removeData(name));
+
+              if (value) {
+                tasks.push(writeData(value, name));
+              } else {
+                tasks.push(removeData(name));
+              }
             }
           }
-
           await Promise.all(tasks);
         },
       },

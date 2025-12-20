@@ -5,7 +5,7 @@
     "": {
       "name": "bridge",
       "dependencies": {
-        "@realastrox11/bunql": "^0.0.6",
+        "@realastrox11/bunql": "^1.0.0",
         "baileys": "https://github.com/WhiskeySockets/Baileys",
       },
       "devDependencies": {
@@ -161,7 +161,7 @@
 
     "@protobufjs/utf8": ["@protobufjs/utf8@1.1.0", "", {}, "sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw=="],
 
-    "@realastrox11/bunql": ["@realastrox11/bunql@0.0.6", "", { "peerDependencies": { "bun": ">=1.0.0" } }, "sha512-JaYudUE32sqOkJyI0G6Tp0W744X2JGgZaDVTkSXKzRhwc4elARNTtdFQSrbH8E6fPTD58Q97zgZNg+Qq62yObw=="],
+    "@realastrox11/bunql": ["@realastrox11/bunql@1.0.0", "", { "peerDependencies": { "bun": ">=1.0.0" } }, "sha512-QYo9AHTbsWoJfBGozxNuUKj1c1hJnGKknIxqJUElneQ1Ta3DCtSpxQQn9xV8kg9UgGaBZ819/DOQWMlZovnowg=="],
 
     "@tokenizer/inflate": ["@tokenizer/inflate@0.4.1", "", { "dependencies": { "debug": "^4.4.3", "token-types": "^6.1.1" } }, "sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA=="],
 

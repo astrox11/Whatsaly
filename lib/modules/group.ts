@@ -1,4 +1,4 @@
-import { type CommandProperty } from "../.";
+import { Group, type CommandProperty } from "../.";
 
 export default [
   {
@@ -7,9 +7,9 @@ export default [
     isGroup: true,
     isAdmin: true,
     async exec(msg, sock, args) {
-      if (!args) return await msg.reply("```provide a new group```");
-      await sock.groupUpdateSubject(msg.chat, args);
-      await msg.reply("```group name updated```");
+      if (!args) return await msg.reply("ᴘʀᴏᴠɪᴅᴇ ɴᴇᴡ ɴᴀᴍᴇ");
+      new Group(msg.chat, sock).Name(args);
+      await msg.reply("ᴅᴏɴᴇ");
     },
   },
 ] satisfies Array<CommandProperty>;

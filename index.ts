@@ -16,13 +16,12 @@ import {
   Message,
   Plugins,
   useBunqlAuth,
+  cachedGroupMetadata,
+  cacheGroupMetadata,
+  Auth,
 } from "./lib";
 
 const msgRetryCounterCache = new NodeCache() as CacheStore;
-const groupCache = new NodeCache({
-  stdTTL: 5 * 60,
-  useClones: false,
-}) as CacheStore;
 const logger = MAIN_LOGGER({ level: "silent" });
 const config = findEnvFile("./");
 
@@ -39,7 +38,7 @@ const start = async () => {
     },
     msgRetryCounterCache,
     getMessage,
-    cachedGroupMetadata: async (jid) => groupCache.get(jid),
+    cachedGroupMetadata,
     generateHighQualityLinkPreview: true,
   });
 
@@ -57,17 +56,25 @@ const start = async () => {
   sock.ev.on("connection.update", ({ connection, lastDisconnect }) => {
     log.info(`Connection status: ${connection}`);
 
-    if (connection === "open") log.info("Connected");
+    if (connection === "open") log.info("Connected successfully!");
 
     if (connection === "close") {
       const status = (lastDisconnect?.error as Boom)?.output?.statusCode;
       log.info(`Disconnect status: ${status}`);
 
-      if (status !== DisconnectReason.loggedOut) {
-        log.info("Reconnecting...");
+      if (status === DisconnectReason.restartRequired) {
+        log.info(
+          "Restart required (expected after pairing). Creating new socket...",
+        );
         start();
+      } else if (status === DisconnectReason.loggedOut) {
+        Auth.delete().where("name", "=", "creds").run();
+        log.error(
+          "Logged out. Credentials cleared. Please restart and pair again.",
+        );
       } else {
-        log.error("Logged out. Please restart the application.");
+        log.info("Unexpected disconnect. Reconnecting...");
+        setTimeout(() => start(), 3000);
       }
     }
   });
@@ -75,7 +82,7 @@ const start = async () => {
   sock.ev.on("groups.update", async ([event]) => {
     try {
       const metadata = await sock.groupMetadata(event.id);
-      groupCache.set(event.id, metadata);
+      cacheGroupMetadata(metadata);
     } catch {
       /** */
     }
@@ -84,7 +91,7 @@ const start = async () => {
   sock.ev.on("group-participants.update", async (event) => {
     try {
       const metadata = await sock.groupMetadata(event.id);
-      groupCache.set(event.id, metadata);
+      cacheGroupMetadata(metadata);
     } catch {
       /** */
     }
@@ -93,19 +100,6 @@ const start = async () => {
   sock.ev.on("messages.upsert", async ({ messages }) => {
     for (const msg of messages) {
       const m = new Message(sock, msg);
-
-      if (m.isGroup) {
-        const exists = groupCache.get(m.chat);
-        if (!exists) {
-          try {
-            const metadata = await sock.groupMetadata(m.chat);
-            groupCache.set(m.chat, metadata);
-          } catch {
-            /** */
-          }
-        }
-      }
-
       const p = new Plugins(m, sock);
       await p.load("./lib/modules");
       p.text();
@@ -114,4 +108,5 @@ const start = async () => {
     }
   });
 };
+
 start();

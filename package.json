@@ -19,7 +19,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@realastrox11/bunql": "^0.0.6",
+    "@realastrox11/bunql": "^1.0.0",
     "baileys": "https://github.com/WhiskeySockets/Baileys"
   }
 }

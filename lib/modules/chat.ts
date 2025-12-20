@@ -1,5 +1,5 @@
 import { generateMessageID } from "baileys";
-import type { CommandProperty } from "../src";
+import type { CommandProperty } from "../.";
 
 export default [
   {
