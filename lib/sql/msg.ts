@@ -8,7 +8,7 @@ const Message = bunql.define("msg_users", {
 });
 
 export const getMessage = async (key: WAMessageKey) => {
-  const id = key.id;
+  const id = key?.id;
   if (id) {
     const m = Message.find({ id }).run()[0];
     return m ? proto.Message.fromObject(JSON.parse(m.msg)) : undefined;
@@ -17,8 +17,8 @@ export const getMessage = async (key: WAMessageKey) => {
 };
 
 export const saveMessage = (key: WAMessageKey, msg: WAMessage) => {
-  const id = key.id;
+  const id = key?.id;
   if (id) {
-    Message.insert({ id, msg: JSON.stringify(msg) });
+    Message.upsert({ id, msg: JSON.stringify(msg || {}) });
   }
 };

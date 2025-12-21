@@ -1,5 +1,6 @@
-import type { GroupMetadata } from "baileys";
+import type { GroupMetadata, WASocket } from "baileys";
 import { bunql } from "./_sql";
+import { log } from "../util";
 
 const Group = bunql.define("group", {
   id: { type: "TEXT", primary: true },
@@ -20,10 +21,24 @@ export const GetGroupMeta = (id: string) => {
   return metadata ? metadata : undefined;
 };
 
-export const cacheGroupMetadata = async (metadata: GroupMetadata) => {
-  const exists = Group.select().where("id", "=", metadata.id).get();
+export const cacheGroupMetadata = async (
+  metadata: GroupMetadata | (Partial<GroupMetadata> & { id: string }),
+) => {
+  const exists = Group.select().where("id", "=", metadata.id).get()[0];
+
   if (exists) {
-    return Group.update({ data: JSON.stringify(metadata) })
+    const existingData = JSON.parse(exists.data) as GroupMetadata;
+
+    const mergedData: GroupMetadata = {
+      ...existingData,
+      ...metadata,
+      participants:
+        metadata.participants !== undefined
+          ? metadata.participants
+          : existingData.participants,
+    };
+
+    return Group.update({ data: JSON.stringify(mergedData) })
       .where("id", "=", metadata.id)
       .run();
   } else {
@@ -38,12 +53,46 @@ export const removeGroupMetadata = async (id: string) => {
   return Group.delete().where("id", "=", id).run();
 };
 
-export const isAdmin = function (id: string, participantId: string) {
-  const metadata = Group.select().where("id", "=", id).get() as unknown as
+export const isAdmin = function (chat: string, participantId: string) {
+  const metadata = Group.select().where("id", "=", chat).get() as unknown as
     | GroupMetadata
     | undefined;
   if (!metadata) return false;
   const participant = metadata.participants.find((p) => p.id === participantId);
   if (!participant) return false;
   return participant.admin !== null;
+};
+
+export const isSuperAdmin = function (chat: string, participantId: string) {
+  const metadata = Group.select().where("id", "=", chat).get() as unknown as
+    | GroupMetadata
+    | undefined;
+  if (!metadata) return false;
+  const participant = metadata.participants.find((p) => p.id === participantId);
+  if (!participant) return false;
+  return participant.admin === "superadmin";
+};
+
+export const getGroupAdmins = function (chat: string) {
+  const metadata = Group.select().where("id", "=", chat).get() as unknown as
+    | GroupMetadata
+    | undefined;
+  if (!metadata) return [];
+  const admins = metadata.participants
+    .filter((p) => p.admin !== null)
+    .map((p) => p.id);
+  return admins;
+};
+
+export const syncGroupMetadata = async (client: WASocket) => {
+  try {
+    const groups = await client.groupFetchAllParticipating();
+    for (const [id, metadata] of Object.entries(groups)) {
+      metadata.id = id;
+      await cacheGroupMetadata(metadata);
+    }
+  } catch (error) {
+    log.error("Error syncing group metadata:", error);
+  }
+  return;
 };

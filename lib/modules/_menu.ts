@@ -14,6 +14,8 @@ export default {
     const categories: Record<string, Set<string>> = {};
 
     for (const cmd of commands) {
+      if (cmd.dontAddToCommandList === true) continue;
+
       const cat = cmd.category;
       if (!categories[cat]) categories[cat] = new Set();
 
@@ -24,6 +26,9 @@ export default {
 
       categories[cat].add(cmdText);
     }
+
+    if (Object.keys(categories).length === 0)
+      return await msg.reply("```No commands available```");
 
     let reply = `αѕтяσ мєиυ\n\n`;
 

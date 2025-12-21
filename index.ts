@@ -19,6 +19,8 @@ import {
   cachedGroupMetadata,
   saveMessage,
   addContact,
+  cacheGroupMetadata,
+  syncGroupMetadata,
 } from "./lib";
 import { isValidPhoneNumber as vaildate } from "libphonenumber-js";
 
@@ -68,6 +70,8 @@ const start = async () => {
         }
       }
       if (connection === "open") log.info("Connected to WhatsApp");
+      await delay(15000);
+      await syncGroupMetadata(sock);
     }
 
     if (events["creds.update"]) {
@@ -79,6 +83,11 @@ const start = async () => {
       for (const msg of messages) {
         saveMessage(msg.key, msg);
         const m = new Message(sock, msg);
+
+        // if (m.isGroup) {
+        //   sock.ev.emit("groups.upsert", [{ id: m.chat }] as GroupMetadata[]);
+        // }
+
         const p = new Plugins(m, sock);
         await p.load("./lib/modules");
         p.text();
@@ -90,6 +99,29 @@ const start = async () => {
     if (events["lid-mapping.update"]) {
       const { pn, lid } = events["lid-mapping.update"];
       addContact(pn, lid);
+    }
+
+    if (events["group-participants.update"]) {
+      const { id } = events["group-participants.update"];
+      const metadata = await sock.groupMetadata(id);
+      cacheGroupMetadata(metadata);
+    }
+
+    if (events["groups.update"]) {
+      const updates = events["groups.update"];
+      for (const update of updates) {
+        const metadata = await sock.groupMetadata(update.id);
+        cacheGroupMetadata(metadata);
+      }
+    }
+
+    if (events["groups.upsert"]) {
+      const groups = events["groups.upsert"];
+      for (const group of groups) {
+        log.debug(group);
+        // const metadata = await sock.groupMetadata(group.id);
+        // cacheGroupMetadata(metadata);
+      }
     }
   });
 };
