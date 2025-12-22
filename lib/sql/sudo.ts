@@ -1,3 +1,4 @@
+import { jidNormalizedUser } from "baileys/src";
 import { bunql } from "./_sql";
 
 const Sudo = bunql.define("sudo_users", {
@@ -13,6 +14,8 @@ export const isSudo = (id: string) => {
 };
 
 export const addSudo = (id: string, lid: string) => {
+  jidNormalizedUser(id);
+  jidNormalizedUser(lid);
   if (!isSudo(id)) {
     Sudo.insert({ pn: id, lid });
     return true;

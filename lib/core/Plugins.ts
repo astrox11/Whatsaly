@@ -1,9 +1,9 @@
 import { readdirSync } from "fs";
 import { join, resolve } from "path";
 import { pathToFileURL } from "url";
-import { jidNormalizedUser, type WASocket } from "baileys";
+import { type WASocket } from "baileys";
 import type { Message } from "./Message";
-import { isSudo, log } from "../";
+import { isAdmin, isSudo, log } from "../";
 
 export class Plugins {
   message: Message;
@@ -21,24 +21,24 @@ export class Plugins {
       const text = this.message.text.replace(/^\s+|\s+$/g, "");
       const cmd = this.find(text);
       const args = text.slice(cmd?.pattern?.length);
-      const owner = [this.client.user.phoneNumber, this.client.user.lid].map(
-        (p) => jidNormalizedUser(p),
-      );
 
-      if (
-        cmd?.isSudo &&
-        !(
-          isSudo(this.message.sender) ||
-          isSudo(this.message.sender_alt) ||
-          owner.includes(this.message.sender)
-        )
-      ) {
+      if (cmd?.isSudo && !isSudo(this.message.sender)) {
         return;
       }
 
       if (cmd?.isGroup && !this.message.isGroup) {
         return await this.message.reply(
           "```this command is for groups only!```",
+        );
+      }
+
+      if (
+        cmd?.isGroup &&
+        cmd?.isAdmin &&
+        !isAdmin(this.message.chat, this.message.sender)
+      ) {
+        return await this.message.reply(
+          "```this command requires group admin privileges!```",
         );
       }
 
