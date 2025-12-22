@@ -14,8 +14,8 @@ export const isSudo = (id: string) => {
 };
 
 export const addSudo = (id: string, lid: string) => {
-  jidNormalizedUser(id);
-  jidNormalizedUser(lid);
+  id = jidNormalizedUser(id);
+  lid = jidNormalizedUser(lid);
   if (!isSudo(id)) {
     Sudo.insert({ pn: id, lid });
     return true;

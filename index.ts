@@ -21,6 +21,7 @@ import {
   addContact,
   cacheGroupMetadata,
   syncGroupMetadata,
+  addSudo,
 } from "./lib";
 import { isValidPhoneNumber as vaildate } from "libphonenumber-js";
 
@@ -56,6 +57,8 @@ const start = async () => {
   }
 
   sock.ev.process(async (events) => {
+    let hasSynced = false;
+
     if (events["connection.update"]) {
       const update = events["connection.update"];
       const { connection, lastDisconnect } = update;
@@ -69,9 +72,15 @@ const start = async () => {
           log.error("Connection closed. You are logged out.");
         }
       }
-      if (connection === "open") log.info("Connected to WhatsApp");
-      await delay(15000);
-      await syncGroupMetadata(sock);
+      if (connection === "open") {
+        log.info("Connected to WhatsApp");
+        if (!hasSynced) {
+          hasSynced = true;
+          addSudo(sock.user.id, sock.user.lid);
+          await delay(15000);
+          await syncGroupMetadata(sock);
+        }
+      }
     }
 
     if (events["creds.update"]) {
@@ -84,9 +93,9 @@ const start = async () => {
         saveMessage(msg.key, msg);
         const m = new Message(sock, msg);
 
-        // if (m.isGroup) {
-        //   sock.ev.emit("groups.upsert", [{ id: m.chat }] as GroupMetadata[]);
-        // }
+        if (m.message.protocolMessage.type === 0) {
+          sock.ev.emit("messages.delete", { keys: [m.key] });
+        }
 
         const p = new Plugins(m, sock);
         await p.load("./lib/modules");
@@ -118,10 +127,13 @@ const start = async () => {
     if (events["groups.upsert"]) {
       const groups = events["groups.upsert"];
       for (const group of groups) {
-        log.debug(group);
-        // const metadata = await sock.groupMetadata(group.id);
-        // cacheGroupMetadata(metadata);
+        const metadata = await sock.groupMetadata(group.id);
+        cacheGroupMetadata(metadata);
       }
+    }
+
+    if (events["messages.delete"]) {
+      // TODO: Handle deleted messages
     }
   });
 };

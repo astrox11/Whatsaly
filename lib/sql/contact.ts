@@ -11,12 +11,12 @@ export const addContact = (pn: string, lid: string) => {
 
 export const getLidByPn = async (pn: string) => {
   const contact = Contact.find({ pn })[0];
-  return contact?.lid || null;
+  return contact?.lid + "@lid" || null;
 };
 
 export const getPnByLid = (lid: string) => {
   const contact = Contact.query().where("lid", "=", lid).first();
-  return contact?.pn || null;
+  return contact?.pn + "@s.whatsapp.net" || null;
 };
 
 export const removeContact = (id: string) => {
