@@ -62,10 +62,10 @@ export class Plugins {
   }
 
   async event() {
-    if (this.message && this.message?.text) {
+    if (this.message) {
       for (const cmd of Plugins.eventCommands) {
         try {
-          return await cmd.exec(this.message, this.client);
+          await cmd.exec(this.message, this.client);
         } catch (error) {
           log.error("[event] CMD ERROR:", error);
         }
@@ -156,4 +156,5 @@ type CommandCategories =
   | "newsletter"
   | "status"
   | "util"
+  | "games"
   | "system";

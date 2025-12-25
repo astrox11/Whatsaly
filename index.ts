@@ -91,10 +91,10 @@ const start = async () => {
     }
 
     if (events["messages.upsert"]) {
-      const { messages } = events["messages.upsert"];
+      const { messages, type } = events["messages.upsert"];
       for (const msg of messages) {
         saveMessage(msg.key, msg);
-        const m = new Message(sock, msg);
+        const m = new Message(sock, msg, type);
 
         if (m?.message?.protocolMessage?.type === 0) {
           sock.ev.emit("messages.delete", { keys: [m.key] });
@@ -102,9 +102,7 @@ const start = async () => {
 
         const p = new Plugins(m, sock);
         await p.load("./lib/modules");
-        p.text();
-        p.sticker();
-        p.event();
+        Promise.allSettled([p.text(), p.sticker(), p.event()]);
       }
     }
 
