@@ -3,7 +3,7 @@ import { join, resolve } from "path";
 import { pathToFileURL } from "url";
 import { type MessageUpsertType, type WASocket } from "baileys";
 import type { Message } from "./Message";
-import { isAdmin, isSudo, log } from "../";
+import { isAdmin, log } from "../";
 
 export class Plugins {
   message: Message;
@@ -28,15 +28,16 @@ export class Plugins {
 
     const args = text.slice(firstWord.length).trim();
 
-    if (cmd.isSudo && !isSudo(this.message.sender)) return;
+    if (this.message.mode == "private" && !this.message.sudo) return;
+    if (cmd?.isSudo && !this.message.sudo) return;
 
-    if (cmd.isGroup && !this.message.isGroup) {
+    if (cmd?.isGroup && !this.message.isGroup) {
       return await this.message.reply("```this command is for groups only!```");
     }
 
     if (
-      cmd.isGroup &&
-      cmd.isAdmin &&
+      cmd?.isGroup &&
+      cmd?.isAdmin &&
       !isAdmin(this.message.chat, this.message.sender)
     ) {
       return await this.message.reply(
@@ -51,9 +52,10 @@ export class Plugins {
     }
   }
 
-  async event(type: MessageUpsertType) {
+  async eventUser(type: MessageUpsertType) {
     if (this.message && type === "notify") {
       for (const cmd of Plugins.eventCommands) {
+        log.debug(cmd);
         try {
           await cmd.exec(this.message, this.client);
         } catch (error) {
@@ -94,9 +96,7 @@ export class Plugins {
 
   private registerCommand(cmd: CommandProperty) {
     if (cmd.event) {
-      if (!Plugins.eventCommands.some((c) => c.pattern === cmd.pattern)) {
-        Plugins.eventCommands.push(cmd);
-      }
+      Plugins.eventCommands.push(cmd);
     }
 
     if (cmd.pattern) {
@@ -113,6 +113,10 @@ export class Plugins {
 
   find(patternOrAlias: string): CommandProperty | undefined {
     return Plugins.commands.get(patternOrAlias);
+  }
+
+  findAll(): CommandProperty[] {
+    return Array.from(Plugins.commands.values());
   }
 }
 

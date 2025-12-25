@@ -4,6 +4,7 @@ export default [
   {
     pattern: "vv",
     alias: ["viewonce"],
+    isSudo: true,
     category: "p2p",
     async exec(msg) {
       if (!msg?.quoted?.viewonce) {
@@ -16,6 +17,7 @@ export default [
   },
   {
     pattern: "block",
+    isSudo: true,
     category: "p2p",
     async exec(msg, _, args) {
       args = msg?.quoted?.sender || args?.replace(/[^a-zA-Z0-9]/g, "");
@@ -33,6 +35,7 @@ export default [
   },
   {
     pattern: "unblock",
+    isSudo: true,
     category: "p2p",
     async exec(msg, _, args) {
       args = msg?.quoted?.sender || args?.replace(/[^a-zA-Z0-9]/g, "");

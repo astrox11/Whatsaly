@@ -1,20 +1,19 @@
 import {
-  downloadMediaMessage,
-  getContentType,
   getDevice,
   isJidGroup,
+  getContentType,
+  downloadMediaMessage,
   normalizeMessageContent,
 } from "baileys";
 import type {
+  proto,
   WASocket,
   WAMessage,
-  proto,
-  WAMessageContent,
   WAMessageKey,
-  MessageUpsertType,
+  WAMessageContent,
 } from "baileys";
 import { fileTypeFromBuffer } from "file-type";
-import { getAlternateId } from "../sql";
+import { getAlternateId, getMode, isSudo } from "../sql";
 
 export class Message {
   client: WASocket;
@@ -30,12 +29,13 @@ export class Message {
   audio: boolean;
   sticker: boolean;
   device: "web" | "unknown" | "android" | "ios" | "desktop";
-  isBot: boolean;
+  mode: "private" | "public";
+  sudo: boolean;
   contextInfo: proto.IContextInfo | undefined;
   quoted: Quoted | undefined;
   text: string | undefined;
 
-  constructor(client: WASocket, message: WAMessage, type?: MessageUpsertType) {
+  constructor(client: WASocket, message: WAMessage) {
     this.client = client;
     this.chat = message.key.remoteJid!;
     this.key = message.key;
@@ -50,7 +50,8 @@ export class Message {
     this.sticker =
       this.type === "stickerMessage" || this.type === "lottieStickerMessage";
     this.device = getDevice(this.key.id);
-    this.isBot = type == "append";
+    this.mode = getMode();
+    this.sudo = isSudo(this.sender);
 
     const content = this.message?.[this.type!];
     this.contextInfo =

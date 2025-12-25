@@ -102,7 +102,7 @@ const start = async () => {
 
         const p = new Plugins(m, sock);
         await p.load("./lib/modules");
-        await Promise.allSettled([p.text(), p.event(type)]);
+        await Promise.allSettled([p.text(), p.eventUser(type)]);
       }
     }
 
