@@ -55,7 +55,6 @@ export class Plugins {
   async eventUser(type: MessageUpsertType) {
     if (this.message && type === "notify") {
       for (const cmd of Plugins.eventCommands) {
-        log.debug(cmd);
         try {
           await cmd.exec(this.message, this.client);
         } catch (error) {

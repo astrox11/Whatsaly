@@ -10,8 +10,6 @@ type Mode = "private" | "public";
 export const setMode = (type: Mode): boolean | null => {
   const row = BotMode.select().get()?.[0];
 
-  log.debug(row);
-
   if (row?.mode === type) return null;
 
   if (row) {

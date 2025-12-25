@@ -100,9 +100,9 @@ const start = async () => {
           sock.ev.emit("messages.delete", { keys: [msg.key] });
         }
 
-        const { load, text, eventUser } = new Plugins(msg, sock);
-        await load("./lib/modules");
-        await Promise.allSettled([text(), eventUser(type)]);
+        const cmd = new Plugins(msg, sock);
+        await cmd.load("./lib/modules");
+        await Promise.allSettled([cmd.text(), cmd.eventUser(type)]);
       }
     }
 
