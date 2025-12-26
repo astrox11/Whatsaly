@@ -6,9 +6,6 @@ import makeWASocket, {
   type CacheStore,
   jidNormalizedUser,
 } from "baileys";
-import { Boom } from "@hapi/boom";
-import MAIN_LOGGER from "pino";
-import NodeCache from "@cacheable/node-cache";
 import {
   log,
   parseEnv,
@@ -24,6 +21,10 @@ import {
   syncGroupMetadata,
   addSudo,
 } from "./lib";
+import { rm } from "fs/promises";
+import { Boom } from "@hapi/boom";
+import MAIN_LOGGER from "pino";
+import NodeCache from "@cacheable/node-cache";
 import { isValidPhoneNumber as vaildate } from "libphonenumber-js";
 
 const msgRetryCounterCache = new NodeCache() as CacheStore;
@@ -72,6 +73,9 @@ const start = async () => {
         ) {
           start();
         } else {
+          ["database.db", "database.dn-shm", "database.db-wal"].forEach(
+            async (file) => await rm(file, { force: true }),
+          );
           log.error("Connection closed. You are logged out.");
         }
       }
