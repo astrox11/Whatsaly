@@ -86,7 +86,7 @@ bun.lockb
 .bun/
 
 # Optional lockfiles (uncomment if you do NOT want to track them)
-# package-lock.json
+package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
 

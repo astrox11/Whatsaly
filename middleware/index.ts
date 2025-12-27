@@ -10,7 +10,12 @@
  * - Normalize and validate incoming data into internal domain-friendly structures
  * - Handle command routing and message classification
  * - Expose a clear interface for downstream services to consume processed events
- * - Remain stateless where possible, delegating persistence to dedicated services
+ * - Delegate persistence and side effects to dedicated services
+ *
+ * Design Notes:
+ * - Core processing functions (normalize, classify, extract) are stateless and pure
+ * - The MiddlewareService class holds configuration and handler references for convenience
+ * - Handler registration is done at startup and remains stable during operation
  *
  * Architecture Overview:
  * ┌─────────────────────────────────────────────────────────────────┐
@@ -114,9 +119,13 @@ import type {
  * This class encapsulates the middleware logic and provides a clean interface
  * for the main application to process WhatsApp events without dealing with
  * low-level details.
+ *
+ * Note: The class holds references to command registry and event handlers for
+ * convenience, but all processing methods are stateless with respect to
+ * message/event data. The registry and handlers are configured at startup.
  */
 export class MiddlewareService {
-  private options: Required<MiddlewareOptions>;
+  private readonly options: Required<MiddlewareOptions>;
   private registry: CommandRegistry | null = null;
   private eventHandlers: CommandDefinition[] = [];
 
