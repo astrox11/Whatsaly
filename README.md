@@ -1,20 +1,7 @@
 # AstroBridge
 
-AstroBridge is a high-performance middleware layer for programmatically controlling WhatsApp. It handles message intake, command parsing, outbound actions, and session management—allowing you to interact with WhatsApp seamlessly by sending Messages.
+AstroBridge provides an abstraction layer for programmatic control of WhatsApp interactions via text commands. It handles management of messages, groups, communities, channels, and events.
 
 # Contributing
 
 Contributions are welcome! AstroBridge is evolving, and community input helps shape its direction.
-
-If you’d like to contribute:
-
-1. **Fork** the repository
-2. **Create a new branch** for your feature or fix
-
-   ```
-   git checkout -b feature-name
-   ```
-
-3. **Commit** your changes with clear messages
-4. **Push** to your fork
-5. Open a **Pull Request** describing what you improved or added
