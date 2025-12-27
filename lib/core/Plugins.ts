@@ -93,7 +93,6 @@ export class Plugins {
       }
     }
     Plugins.isLoaded = true;
-    log.info("Plugins loaded successfully");
   }
 
   private registerCommand(cmd: CommandProperty) {

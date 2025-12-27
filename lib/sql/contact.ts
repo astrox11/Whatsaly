@@ -15,6 +15,12 @@ export const addContact = (pn: string, lid: string) => {
   return;
 };
 
+export const getAllContacts = () => {
+  return Contact.all()
+    .map((p) => p.pn)
+    .map((e) => `${e}@s.whatsapp.net`);
+};
+
 export const getLidByPn = async (pn: string) => {
   const contact = Contact.find({ pn })[0];
   return contact?.lid + "@lid" || null;
@@ -42,6 +48,7 @@ export const getBothId = (id: string) => {
 };
 
 export const getAlternateId = (id: string) => {
+  id = id?.split("@")?.[0];
   const contact = Contact.query()
     .where("pn", "=", id)
     .orWhere("lid", "=", id)
@@ -74,7 +81,7 @@ export function parseId(input: string | string[]): string | string[] | null {
 
   if (!input || typeof input !== "string") return null;
 
-  let cleanInput = input.includes(":") ? input.split(":")[1] : input;
+  const cleanInput = input.includes(":") ? input.split(":")[1] : input;
 
   const parts = cleanInput.split("@");
   const baseId = parts[0];

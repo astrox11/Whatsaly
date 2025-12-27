@@ -1,4 +1,4 @@
-import { generateMessageID, jidNormalizedUser } from "baileys";
+import { generateMessageID } from "baileys";
 import { formatRuntime, type CommandProperty } from "..";
 
 export default [

@@ -13,12 +13,19 @@ import type {
   WAMessage,
   WAMessageKey,
   WAMessageContent,
+  AnyMediaMessageContent,
 } from "baileys";
 import { fileTypeFromBuffer } from "file-type";
 import { getAlternateId, getMode, isSudo } from "../sql";
-import { log } from "../util";
 
-type SendType = "text" | "video" | "audio" | "document" | "sticker" | "buttons";
+type SendType =
+  | "video"
+  | "audio"
+  | "document"
+  | "sticker"
+  | "buttons"
+  | "text"
+  | "image";
 
 type ButtonParams = {
   text: string;
@@ -156,7 +163,7 @@ export class Message {
       const msg = await this.client.relayMessage(
         this.chat,
         {
-          viewOnceMessage: {
+          documentWithCaptionMessage: {
             message: {
               buttonsMessage: {
                 headerType: 2,
@@ -216,7 +223,7 @@ export class Message {
     let mediaType: Exclude<SendType, "text" | "buttons">;
     let detectedMimetype = options.mimetype;
 
-    if (options.type && options.type !== "text") {
+    if (options.type) {
       mediaType = options.type;
     } else if (isBuffer) {
       const fileType = await fileTypeFromBuffer(content);
@@ -245,9 +252,13 @@ export class Message {
       gifPlayback: mediaType === "video" ? options.gifPlayback : undefined,
     };
 
-    const msg = await this.client.sendMessage(this.chat, messageData, {
-      quoted: this,
-    });
+    const msg = await this.client.sendMessage(
+      this.chat,
+      messageData as unknown as AnyMediaMessageContent,
+      {
+        quoted: this,
+      },
+    );
 
     return new Message(this.client, msg!);
   }
@@ -290,7 +301,9 @@ export class Message {
     );
   }
 
-  private mimetypeToMediaType(mimetype: string): string {
+  private mimetypeToMediaType(
+    mimetype: string,
+  ): Exclude<SendType, "text" | "buttons"> {
     if (mimetype.startsWith("image/")) return "image";
     if (mimetype.startsWith("video/")) return "video";
     if (mimetype.startsWith("audio/")) return "audio";
@@ -300,12 +313,11 @@ export class Message {
   private detectFromUrl(
     url: string,
     mimetype?: string,
-  ): { type: string; mimetype?: string } {
+  ): { type: Exclude<SendType, "text" | "buttons">; mimetype?: string } {
     if (mimetype) {
       return { type: this.mimetypeToMediaType(mimetype), mimetype };
     }
 
-    // Extension-based fallback
     const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
     const extMap: Record<string, { type: string; mimetype: string }> = {
       jpg: { type: "image", mimetype: "image/jpeg" },
@@ -324,7 +336,10 @@ export class Message {
     };
 
     return (
-      extMap[ext!] || { type: "document", mimetype: "application/octet-stream" }
+      extMap[ext!] || {
+        type: "document",
+        mimetype: "application/octet-stream",
+      }
     );
   }
 }

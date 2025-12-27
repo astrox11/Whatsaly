@@ -1,4 +1,3 @@
-import { log } from "../util";
 import { bunql } from "./_sql";
 
 const BotMode = bunql.define("mode", {
