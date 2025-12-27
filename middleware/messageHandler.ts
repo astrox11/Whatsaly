@@ -53,7 +53,8 @@ export function normalizeMessage(
 
   // Determine sender based on message context
   const senderId = determineSenderId(client, rawMessage, isGroup);
-  const senderAltId = getAlternateId(senderId);
+  const altId = getAlternateId(senderId);
+  const senderAltId = altId ?? undefined;
 
   // Normalize message content
   const messageContent = normalizeMessageContent(rawMessage.message!);
@@ -75,6 +76,15 @@ export function normalizeMessage(
   // Check for quoted content
   const hasQuoted = hasQuotedMessage(messageContent, contentType);
 
+  // Determine timestamp - prefer message timestamp, fallback to current time
+  const messageTimestamp = rawMessage.messageTimestamp;
+  const timestamp =
+    typeof messageTimestamp === "number"
+      ? messageTimestamp * 1000 // Convert seconds to milliseconds
+      : typeof messageTimestamp === "object" && messageTimestamp !== null
+        ? Number(messageTimestamp) * 1000
+        : Date.now();
+
   return {
     id: rawMessage.key.id!,
     chatId,
@@ -89,7 +99,7 @@ export function normalizeMessage(
     command,
     mediaType,
     hasQuoted,
-    timestamp: Date.now(),
+    timestamp,
     device: getDevice(rawMessage.key.id),
     raw: rawMessage,
   };
