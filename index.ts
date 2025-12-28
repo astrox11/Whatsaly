@@ -95,7 +95,6 @@ const start = async () => {
       await Promise.all(
         messages.map(async (message) => {
           try {
-            log.debug(message);
             saveMessage(message.key, message);
             const msg = new Message(sock, message);
             if (msg?.message?.protocolMessage?.type === 0) {
