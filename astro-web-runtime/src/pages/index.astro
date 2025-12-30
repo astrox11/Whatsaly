@@ -448,7 +448,21 @@ import Layout from '../layouts/Layout.astro';
   }
 
   function renderSessions(sessions: Array<{id: string; phone_number: string; created_at: number; status: string; pushName?: string; push_name?: string}>) {
+    console.log('[wa-runtime] renderSessions called with', sessions.length, 'sessions');
+    console.log('[wa-runtime] Sessions data:', JSON.stringify(sessions, null, 2));
+    
     sessionsLoaded = true;
+    
+    if (!sessionsList) {
+      console.error('[wa-runtime] sessionsList element not found!');
+      return;
+    }
+    
+    if (!sessionCount) {
+      console.error('[wa-runtime] sessionCount element not found!');
+      return;
+    }
+    
     sessionCount.textContent = `${sessions.length} session${sessions.length !== 1 ? 's' : ''}`;
     
     if (sessions.length === 0) {
@@ -529,13 +543,21 @@ import Layout from '../layouts/Layout.astro';
   // Subscribe to real-time updates via WebSocket
   api.onStats((data) => {
     console.log('[wa-runtime] Received stats update:', data);
-    if (data.type === 'stats') {
-      updateStats(data.data.overall);
+    console.log('[wa-runtime] Data type:', data?.type);
+    console.log('[wa-runtime] Sessions array:', data?.data?.sessions);
+    
+    if (data && data.type === 'stats' && data.data) {
+      if (data.data.overall) {
+        updateStats(data.data.overall);
+      }
       if (data.data.network) {
         updateNetworkStatus(data.data.network);
       }
-      if (data.data.sessions) {
-        renderSessions(data.data.sessions.map((s: any) => ({
+      // Render sessions - handle both array directly or from data.data
+      const sessionsData = data.data.sessions;
+      if (sessionsData && Array.isArray(sessionsData)) {
+        console.log('[wa-runtime] Rendering', sessionsData.length, 'sessions');
+        renderSessions(sessionsData.map((s: any) => ({
           id: s.id,
           phone_number: s.phone_number,
           created_at: s.created_at,
@@ -543,7 +565,11 @@ import Layout from '../layouts/Layout.astro';
           pushName: s.pushName,
           push_name: s.push_name,
         })));
+      } else {
+        console.log('[wa-runtime] No sessions array found in data');
       }
+    } else {
+      console.log('[wa-runtime] Invalid data structure received');
     }
   });
 
