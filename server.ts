@@ -6,6 +6,7 @@
  */
 
 import { WebSocket } from "ws";
+import Bun from "bun";
 
 const wsListener = WebSocket.prototype.on || WebSocket.prototype.addListener;
 const mockEvent = (event: string) =>
@@ -30,7 +31,7 @@ import { handleApiRequest, type ApiResponse, type CorsOptions } from "./api";
 function getCorsOrigins(): string[] {
   const envOrigins = process.env.CORS_ORIGINS;
   if (envOrigins) {
-    return envOrigins.split(",").map(o => o.trim());
+    return envOrigins.split(",").map((o) => o.trim());
   }
   return ["http://localhost:4321", "http://127.0.0.1:4321"];
 }
@@ -84,10 +85,7 @@ function getHttpStatusCode(data: ApiResponse): number {
 /**
  * Create HTTP response with proper headers
  */
-function createResponse(
-  data: ApiResponse,
-  origin: string | null,
-): Response {
+function createResponse(data: ApiResponse, origin: string | null): Response {
   const corsHeaders = createCorsHeaders(origin, corsOptions);
 
   return new Response(JSON.stringify(data), {
@@ -149,20 +147,21 @@ const server = Bun.serve({
     }
 
     // 404 for unknown routes
-    return createResponse(
-      { success: false, error: "Not found" },
-      origin,
-    );
+    return createResponse({ success: false, error: "Not found" }, origin);
   },
 });
 
-log.info(`wa-runtime backend server running on http://${config.API_HOST}:${config.API_PORT}`);
+log.info(
+  `wa-runtime backend server running on http://${config.API_HOST}:${config.API_PORT}`,
+);
 
-// Restore existing sessions on startup
-sessionManager.restoreAllSessions().then(() => {
-  log.info("Session restoration complete");
-}).catch((error) => {
-  log.error("Failed to restore sessions:", error);
-});
+sessionManager
+  .restoreAllSessions()
+  .then(() => {
+    log.info("Session restoration complete");
+  })
+  .catch((error) => {
+    log.error("Failed to restore sessions:", error);
+  });
 
 export { server };
