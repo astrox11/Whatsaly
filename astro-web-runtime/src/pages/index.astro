@@ -3,7 +3,84 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="wa-runtime">
-  <main class="max-w-4xl mx-auto px-4 py-8">
+  <!-- Desktop Sidebar (hidden on mobile) -->
+  <aside id="desktop-sidebar" class="hidden lg:flex fixed left-4 top-1/2 -translate-y-1/2 z-50 flex-col gap-2 bg-gh-bg border border-gh-border rounded-gh p-2 shadow-lg">
+    <a href="https://github.com/astrox11/wa-runtime" target="_blank" rel="noopener noreferrer" class="p-2 text-gh-text-secondary hover:text-gh-text hover:bg-gh-bg-tertiary rounded-gh transition-colors" title="View on GitHub">
+      <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"/>
+      </svg>
+    </a>
+    <button id="sidebar-create-session" class="p-2 text-gh-text-secondary hover:text-gh-success hover:bg-gh-bg-tertiary rounded-gh transition-colors" title="Create New Session">
+      <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+        <path d="m11.28 3.22 4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734L13.94 8l-3.72-3.72a.749.749 0 0 1 .326-1.275.749.749 0 0 1 .734.215Zm-6.56 0a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042L2.06 8l3.72 3.72a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L.47 8.53a.75.75 0 0 1 0-1.06Z"/>
+      </svg>
+    </button>
+    <button id="sidebar-console" class="p-2 text-gh-text-secondary hover:text-gh-text hover:bg-gh-bg-tertiary rounded-gh transition-colors" title="View Logs">
+      <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25Zm1.75-.25a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25Zm7.25 2a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5h-3a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3a.75.75 0 0 0 0-1.5ZM4.78 6.72a.75.75 0 0 0-1.06 1.06l1.22 1.22-1.22 1.22a.75.75 0 1 0 1.06 1.06l1.75-1.75a.75.75 0 0 0 0-1.06Z"/>
+      </svg>
+    </button>
+  </aside>
+
+  <!-- Logs Modal -->
+  <div id="logs-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" id="logs-modal-backdrop"></div>
+    <div class="absolute inset-4 lg:inset-20 bg-gh-bg border border-gh-border rounded-gh shadow-xl flex flex-col">
+      <div class="p-4 border-b border-gh-border flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-gh-text-secondary" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M0 2.75C0 1.784.784 1 1.75 1h12.5c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 14.25 15H1.75A1.75 1.75 0 0 1 0 13.25Zm1.75-.25a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V2.75a.25.25 0 0 0-.25-.25Z"/>
+          </svg>
+          <h2 class="text-sm font-semibold text-gh-text">Application Logs</h2>
+        </div>
+        <button id="close-logs-modal" class="p-1 text-gh-text-secondary hover:text-gh-text transition-colors">
+          <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
+          </svg>
+        </button>
+      </div>
+      <div id="logs-container" class="flex-1 p-4 overflow-auto font-mono text-xs text-gh-text-secondary bg-gh-bg-secondary">
+        <p class="text-gh-text-muted">Logs will appear here...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Session Modal -->
+  <div id="create-session-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" id="create-session-modal-backdrop"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-gh-bg border border-gh-border rounded-gh shadow-xl">
+      <div class="p-4 border-b border-gh-border flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-gh-success" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"/>
+          </svg>
+          <h2 class="text-sm font-semibold text-gh-text">Create New Session</h2>
+        </div>
+        <button id="close-create-modal" class="p-1 text-gh-text-secondary hover:text-gh-text transition-colors">
+          <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
+          </svg>
+        </button>
+      </div>
+      <form id="modal-session-form" class="p-4 space-y-4">
+        <div>
+          <label for="modal-phone" class="block text-sm font-medium text-gh-text mb-1">Phone Number</label>
+          <input type="tel" id="modal-phone" name="phoneNumber" placeholder="14155551234" required pattern="[0-9]+" class="w-full px-3 py-1.5 text-sm bg-gh-bg border border-gh-border rounded-gh text-gh-text placeholder-gh-text-muted focus:outline-none focus:border-gh-accent focus:ring-1 focus:ring-gh-accent"/>
+          <p class="text-xs text-gh-text-muted mt-1">Include country code without + symbol</p>
+        </div>
+        <div>
+          <label for="modal-botName" class="block text-sm font-medium text-gh-text mb-1">Bot Name <span class="text-gh-text-muted font-normal">(optional)</span></label>
+          <input type="text" id="modal-botName" name="botName" placeholder="My Bot" class="w-full px-3 py-1.5 text-sm bg-gh-bg border border-gh-border rounded-gh text-gh-text placeholder-gh-text-muted focus:outline-none focus:border-gh-accent focus:ring-1 focus:ring-gh-accent"/>
+        </div>
+        <div id="modal-error-message" class="p-3 rounded-gh bg-gh-danger-subtle border border-gh-danger text-gh-danger text-sm hidden"></div>
+        <button type="submit" class="w-full py-2 px-4 text-sm font-medium rounded-gh bg-gh-success text-white hover:bg-green-700 transition-colors">
+          Create Session
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <main class="max-w-4xl mx-auto px-4 py-8 lg:ml-20">
     <!-- Hero Section -->
     <div class="text-center mb-8">
       <div class="flex justify-center mb-4">
@@ -204,14 +281,19 @@ import Layout from '../layouts/Layout.astro';
 
     <!-- Existing Sessions -->
     <div class="mt-6 bg-gh-bg border border-gh-border rounded-gh">
-      <div class="p-4 border-b border-gh-border flex items-center justify-between">
+      <div class="p-4 border-b border-gh-border flex items-center justify-between cursor-pointer hover:bg-gh-bg-secondary transition-colors" id="sessions-header">
         <div class="flex items-center gap-2">
           <svg class="w-4 h-4 text-gh-text-secondary" viewBox="0 0 16 16" fill="currentColor">
             <path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11.006 1h4.245a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.507a2.25 2.25 0 0 0-1.591.659l-.622.621a.75.75 0 0 1-1.06 0l-.622-.621A2.25 2.25 0 0 0 5.258 13H.75a.75.75 0 0 1-.75-.75Zm7.251 10.324.004-5.073-.002-2.253A2.25 2.25 0 0 0 5.003 2.5H1.5v9h3.757a3.75 3.75 0 0 1 1.994.574ZM8.755 4.75l-.004 7.322a3.752 3.752 0 0 1 1.992-.572H14.5v-9h-3.495a2.25 2.25 0 0 0-2.25 2.25Z"/>
           </svg>
           <h2 class="text-sm font-semibold text-gh-text">Sessions</h2>
+          <span id="session-count" class="text-xs text-gh-text-muted">Loading...</span>
         </div>
-        <span id="session-count" class="text-xs text-gh-text-muted">Loading...</span>
+        <div class="flex items-center gap-2">
+          <svg id="sessions-chevron" class="w-4 h-4 text-gh-text-secondary transition-transform" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M12.78 5.22a.749.749 0 0 1 0 1.06l-4.25 4.25a.749.749 0 0 1-1.06 0L3.22 6.28a.749.749 0 1 1 1.06-1.06L8 8.939l3.72-3.719a.749.749 0 0 1 1.06 0Z"/>
+          </svg>
+        </div>
       </div>
       <div id="sessions-list" class="divide-y divide-gh-border">
         <!-- Skeleton loaders -->
@@ -487,16 +569,17 @@ import Layout from '../layouts/Layout.astro';
     sessionsList.innerHTML = sessions.map(session => {
       const displayName = session.pushName || session.push_name || `+${session.phone_number}`;
       
+      // Status icons: active = green checkmark, pairing = brown/yellow donut loading, inactive = red X
       const statusIcon = session.status === 'active' 
         ? `<svg class="w-4 h-4 text-gh-success" viewBox="0 0 16 16" fill="currentColor">
             <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/>
           </svg>`
         : session.status === 'pairing'
-        ? `<svg class="w-4 h-4 text-gh-warning" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
+        ? `<svg class="w-4 h-4 text-amber-600 animate-spin" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="6" stroke-dasharray="28" stroke-dashoffset="7"/>
           </svg>`
-        : `<svg class="w-4 h-4 text-gh-text-muted" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm9.78-2.22-5.5 5.5a.749.749 0 0 1-1.275-.326.749.749 0 0 1 .215-.734l5.5-5.5a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042Z"/>
+        : `<svg class="w-4 h-4 text-gh-danger" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/>
           </svg>`;
       
       return `
@@ -618,4 +701,128 @@ import Layout from '../layouts/Layout.astro';
   function hideError() {
     errorDiv.classList.add('hidden');
   }
+
+  // Sessions section collapse functionality
+  const sessionsHeader = document.getElementById('sessions-header');
+  const sessionsChevron = document.getElementById('sessions-chevron');
+  let sessionsCollapsed = false;
+
+  sessionsHeader?.addEventListener('click', () => {
+    sessionsCollapsed = !sessionsCollapsed;
+    if (sessionsCollapsed) {
+      sessionsList?.classList.add('hidden');
+      sessionsChevron?.classList.add('-rotate-90');
+    } else {
+      sessionsList?.classList.remove('hidden');
+      sessionsChevron?.classList.remove('-rotate-90');
+    }
+  });
+
+  // Logs modal functionality
+  const logsModal = document.getElementById('logs-modal');
+  const logsModalBackdrop = document.getElementById('logs-modal-backdrop');
+  const closeLogsModal = document.getElementById('close-logs-modal');
+  const sidebarConsole = document.getElementById('sidebar-console');
+  const logsContainer = document.getElementById('logs-container');
+
+  // Store logs
+  const appLogs: string[] = [];
+  const MAX_LOGS = 100;
+
+  function addLog(message: string) {
+    const timestamp = new Date().toISOString().slice(11, 23);
+    appLogs.push(`[${timestamp}] ${message}`);
+    if (appLogs.length > MAX_LOGS) appLogs.shift();
+    updateLogsDisplay();
+  }
+
+  function updateLogsDisplay() {
+    if (logsContainer) {
+      logsContainer.innerHTML = appLogs.length > 0 
+        ? appLogs.map(log => `<div class="py-0.5">${log}</div>`).join('')
+        : '<p class="text-gh-text-muted">No logs yet...</p>';
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+  }
+
+  // Override console.log to capture logs
+  const originalConsoleLog = console.log;
+  console.log = (...args: unknown[]) => {
+    originalConsoleLog(...args);
+    const message = args.map(arg => 
+      typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+    ).join(' ');
+    if (message.includes('[wa-runtime]')) {
+      addLog(message);
+    }
+  };
+
+  sidebarConsole?.addEventListener('click', () => {
+    logsModal?.classList.remove('hidden');
+    updateLogsDisplay();
+  });
+
+  closeLogsModal?.addEventListener('click', () => {
+    logsModal?.classList.add('hidden');
+  });
+
+  logsModalBackdrop?.addEventListener('click', () => {
+    logsModal?.classList.add('hidden');
+  });
+
+  // Create session modal functionality
+  const createModal = document.getElementById('create-session-modal');
+  const createModalBackdrop = document.getElementById('create-session-modal-backdrop');
+  const closeCreateModal = document.getElementById('close-create-modal');
+  const sidebarCreateSession = document.getElementById('sidebar-create-session');
+  const modalForm = document.getElementById('modal-session-form') as HTMLFormElement;
+  const modalErrorDiv = document.getElementById('modal-error-message');
+
+  sidebarCreateSession?.addEventListener('click', () => {
+    createModal?.classList.remove('hidden');
+  });
+
+  closeCreateModal?.addEventListener('click', () => {
+    createModal?.classList.add('hidden');
+  });
+
+  createModalBackdrop?.addEventListener('click', () => {
+    createModal?.classList.add('hidden');
+  });
+
+  modalForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const phoneInput = document.getElementById('modal-phone') as HTMLInputElement;
+    const phoneNumber = phoneInput.value.replace(/\D/g, '');
+    
+    if (!phoneNumber) {
+      if (modalErrorDiv) {
+        modalErrorDiv.textContent = 'Please enter a valid phone number';
+        modalErrorDiv.classList.remove('hidden');
+      }
+      return;
+    }
+
+    const submitBtn = modalForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating...';
+    modalErrorDiv?.classList.add('hidden');
+
+    const result = await api.createSession(phoneNumber);
+
+    if (result.success && result.data) {
+      window.location.href = `/pairing/${result.data.id}?code=${result.data.pairingCode}`;
+    } else {
+      if (modalErrorDiv) {
+        modalErrorDiv.textContent = result.error || 'Failed to create session';
+        modalErrorDiv.classList.remove('hidden');
+      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create Session';
+    }
+  });
+
+  // Add initial log
+  addLog('[wa-runtime] Application initialized');
 </script>
