@@ -36,6 +36,7 @@ import {
   type SessionRecord,
 } from "../";
 import { useSessionAuth } from "./auth";
+import { isNetworkStable } from "../util/networkProbe";
 
 const logger = MAIN_LOGGER({ level: "silent" });
 
@@ -90,15 +91,15 @@ class SessionManager {
    * Start continuous network health monitoring
    */
   private startNetworkMonitoring() {
-    this.networkCheckInterval = setInterval(() => {
-      this.checkNetworkHealth();
+    this.networkCheckInterval = setInterval(async () => {
+      await this.checkNetworkHealth();
     }, SessionManager.NETWORK_CHECK_INTERVAL_MS);
   }
 
   /**
    * Check network health and pause/resume sessions accordingly
    */
-  private checkNetworkHealth() {
+  private async checkNetworkHealth() {
     const now = Date.now();
     this.networkState.lastCheck = now;
 
@@ -113,16 +114,12 @@ class SessionManager {
       `Network health check: ${disconnectedCount}/${totalSessions} sessions disconnected`,
     );
 
-    // If more than half of sessions are disconnected, assume network issue
     if (
       totalSessions > 0 &&
-      disconnectedCount >= Math.ceil(totalSessions / 2)
+      (disconnectedCount >= Math.ceil(totalSessions / 2) ||
+        !(await isNetworkStable()))
     ) {
       this.networkState.consecutiveFailures++;
-
-      log.debug(
-        `Network failures: ${this.networkState.consecutiveFailures}/${SessionManager.NETWORK_FAILURE_THRESHOLD}`,
-      );
 
       if (
         this.networkState.consecutiveFailures >=
@@ -134,11 +131,9 @@ class SessionManager {
         this.networkState.isHealthy = false;
       }
     } else {
-      // Network is healthy
       this.networkState.consecutiveFailures = 0;
 
       if (this.networkState.isPaused && !this.networkState.isHealthy) {
-        // Resume sessions when network recovers
         this.resumeAllSessions();
       }
       this.networkState.isHealthy = true;
@@ -497,16 +492,24 @@ class SessionManager {
       if (events["groups.update"]) {
         const updates = events["groups.update"];
         for (const update of updates) {
-          const metadata = await sock.groupMetadata(update.id);
-          cacheGroupMetadata(session.id, metadata);
+          try {
+            const metadata = await sock.groupMetadata(update.id);
+            cacheGroupMetadata(session.id, metadata);
+          } catch (e) {
+            log.error("Group fetch failed:", e);
+          }
         }
       }
 
       if (events["groups.upsert"]) {
         const groups = events["groups.upsert"];
         for (const group of groups) {
-          const metadata = await sock.groupMetadata(group.id);
-          cacheGroupMetadata(session.id, metadata);
+          try {
+            const metadata = await sock.groupMetadata(group.id);
+            cacheGroupMetadata(session.id, metadata);
+          } catch (e) {
+            log.error("Group fetch failed:", e);
+          }
         }
       }
 
@@ -650,7 +653,7 @@ class SessionManager {
     }
 
     let activeSession = this.sessions.get(sessionId);
-    
+
     if (!activeSession) {
       const dbSession = getSession(sessionId);
       if (!dbSession) {
@@ -667,14 +670,17 @@ class SessionManager {
       this.sessions.set(sessionId, activeSession);
     }
 
-    if (activeSession.status === "connected" || activeSession.status === "connecting") {
+    if (
+      activeSession.status === "connected" ||
+      activeSession.status === "connecting"
+    ) {
       return { success: false, error: "Session already active" };
     }
 
     log.debug(`Resuming session ${sessionId}...`);
 
     activeSession.status = "connecting";
-    
+
     try {
       await this.initializeSession(activeSession, false);
       log.info(`Session ${sessionId} resumed`);
@@ -684,7 +690,8 @@ class SessionManager {
       activeSession.status = "paused";
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to resume session",
+        error:
+          error instanceof Error ? error.message : "Failed to resume session",
       };
     }
   }
@@ -773,7 +780,8 @@ class SessionManager {
       const activeSession = this.sessions.get(session.id);
       return {
         ...session,
-        status: activeSession?.status === "paused" ? "inactive" : session.status,
+        status:
+          activeSession?.status === "paused" ? "inactive" : session.status,
         pushName: this.getPushName(session.id) || session.push_name,
       };
     });
