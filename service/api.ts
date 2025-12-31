@@ -104,7 +104,6 @@ export async function handleWsAction(request: WsRequest): Promise<WsResponse> {
 
   try {
     let result: ApiResponse;
-
     switch (action) {
       case "getSessions":
         result = middlewareGetSessions();
