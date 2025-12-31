@@ -1,0 +1,25 @@
+import fs from "fs";
+import path from "path";
+import { cwd } from "process";
+
+try {
+  const target = path.join(
+    "node_modules",
+    "libsignal",
+    "src",
+    "session_record.js",
+  );
+  const content = fs.readFileSync(`${cwd()}${target}`, "utf8");
+  fs.writeFileSync(
+    target,
+    content
+      .split("\n")
+      .filter(
+        (line) => !line.includes('console.info("Closing session:", session)'),
+      )
+      .join("\n"),
+    "utf8",
+  );
+} catch {
+  /** */
+}

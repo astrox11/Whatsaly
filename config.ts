@@ -1,5 +1,5 @@
 export default {
-  VERSION: "1.0.0",
+  VERSION: (await import("./package.json")).version,
   BOT_NAME: process.env.BOT_NAME || "Whatsaly",
   PHONE_NUMBER: process.env.PHONE_NUMBER || "",
   API_PORT: parseInt(process.env.API_PORT || "3000", 10),

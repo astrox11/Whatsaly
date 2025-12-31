@@ -1,86 +1,25 @@
-/**
- * API Service Layer
- *
- * This module is a thin orchestration layer that:
- * - Aggregates and composes data from middleware calls
- * - Formats responses for consumers
- * - Exposes HTTP routes and WebSocket actions
- *
- * All business logic, validation, transformation, and error handling
- * is delegated to the middleware layer.
- */
-
-import { log } from "./lib";
+import { log } from "../lib";
 import {
-  // Session operations
-  getSessions as middlewareGetSessions,
-  getSession as middlewareGetSession,
-  createSession as middlewareCreateSession,
-  deleteSession as middlewareDeleteSession,
-  pauseSession as middlewarePauseSession,
-  resumeSession as middlewareResumeSession,
-  // Auth operations
-  getAuthStatus as middlewareGetAuthStatus,
-  // Stats operations
-  getOverallStats as middlewareGetOverallStats,
-  getSessionStats as middlewareGetSessionStats,
-  // Message operations
-  getMessages as middlewareGetMessages,
-  // Config operations
-  getConfig as middlewareGetConfig,
-  // Network operations
-  getNetworkState as middlewareGetNetworkState,
-  // Group operations
-  getGroups as middlewareGetGroups,
-  // Runtime stats
-  runtimeStats,
-  // Types
-  type ApiResponse,
+  getSessions,
+  getSession,
+  createSession,
+  deleteSession,
+  pauseSession,
+  resumeSession,
+  getAuthStatus,
+  getOverallStats,
+  getSessionStats,
+  getMessages,
+  getConfig,
+  getNetworkState,
+  getGroups,
 } from "./middleware";
-
-export type { ApiResponse };
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface SessionCreateRequest {
-  phoneNumber: string;
-  botName?: string;
-}
-
-export type WsAction =
-  | "getSessions"
-  | "getSession"
-  | "createSession"
-  | "deleteSession"
-  | "getAuthStatus"
-  | "getStats"
-  | "getSessionStats"
-  | "getMessages"
-  | "getConfig"
-  | "getNetworkState"
-  | "getGroups"
-  | "pauseSession"
-  | "resumeSession";
-
-export interface WsRequest {
-  action: WsAction;
-  requestId?: string;
-  params?: Record<string, string | number | boolean | undefined>;
-}
-
-export interface WsResponse {
-  action: WsAction;
-  requestId?: string;
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}
-
-// ============================================================================
-// Request Parsing
-// ============================================================================
+import type {
+  ApiResponse,
+  SessionCreateRequest,
+  WsRequest,
+  WsResponse,
+} from "./types";
 
 async function parseBody<T>(req: Request): Promise<T | null> {
   try {
@@ -90,13 +29,6 @@ async function parseBody<T>(req: Request): Promise<T | null> {
   }
 }
 
-// ============================================================================
-// WebSocket Action Handler
-// ============================================================================
-
-/**
- * Handle WebSocket actions by delegating to middleware
- */
 export async function handleWsAction(request: WsRequest): Promise<WsResponse> {
   const { action, requestId, params = {} } = request;
 
@@ -106,35 +38,35 @@ export async function handleWsAction(request: WsRequest): Promise<WsResponse> {
     let result: ApiResponse;
     switch (action) {
       case "getSessions":
-        result = middlewareGetSessions();
+        result = getSessions();
         break;
 
       case "getSession":
-        result = middlewareGetSession(params.id as string);
+        result = getSession(params.id as string);
         break;
 
       case "createSession":
-        result = await middlewareCreateSession(params.phoneNumber as string);
+        result = await createSession(params.phoneNumber as string);
         break;
 
       case "deleteSession":
-        result = await middlewareDeleteSession(params.id as string);
+        result = await deleteSession(params.id as string);
         break;
 
       case "getAuthStatus":
-        result = middlewareGetAuthStatus(params.sessionId as string);
+        result = getAuthStatus(params.sessionId as string);
         break;
 
       case "getStats":
-        result = middlewareGetOverallStats();
+        result = getOverallStats();
         break;
 
       case "getSessionStats":
-        result = middlewareGetSessionStats(params.sessionId as string);
+        result = getSessionStats(params.sessionId as string);
         break;
 
       case "getMessages":
-        result = middlewareGetMessages(
+        result = getMessages(
           params.sessionId as string,
           (params.limit as number) || 100,
           (params.offset as number) || 0,
@@ -142,23 +74,23 @@ export async function handleWsAction(request: WsRequest): Promise<WsResponse> {
         break;
 
       case "getConfig":
-        result = middlewareGetConfig();
+        result = getConfig();
         break;
 
       case "getNetworkState":
-        result = middlewareGetNetworkState();
+        result = getNetworkState();
         break;
 
       case "getGroups":
-        result = middlewareGetGroups(params.sessionId as string);
+        result = getGroups(params.sessionId as string);
         break;
 
       case "pauseSession":
-        result = await middlewarePauseSession(params.id as string);
+        result = await pauseSession(params.id as string);
         break;
 
       case "resumeSession":
-        result = await middlewareResumeSession(params.id as string);
+        result = await resumeSession(params.id as string);
         break;
 
       default:
@@ -183,75 +115,58 @@ export async function handleWsAction(request: WsRequest): Promise<WsResponse> {
   }
 }
 
-// ============================================================================
-// HTTP Route Handlers
-// ============================================================================
-
 const routes: Record<
   string,
   (req: Request, params?: Record<string, string>) => Promise<ApiResponse>
 > = {
-  // Session management
   "GET /api/sessions": async () => {
-    return middlewareGetSessions();
+    return getSessions();
   },
 
   "POST /api/sessions": async (req) => {
     const body = await parseBody<SessionCreateRequest>(req);
-    if (!body || !body.phoneNumber) {
-      return { success: false, error: "Phone number is required" };
+    if (!body || !body?.phoneNumber) {
+      return { success: false, error: "invaild_parameters" };
     }
-    return middlewareCreateSession(body.phoneNumber);
+    return createSession(body.phoneNumber);
   },
 
   "GET /api/sessions/:id": async (_req, params) => {
-    return middlewareGetSession(params?.id);
+    return getSession(params?.id);
   },
 
   "DELETE /api/sessions/:id": async (_req, params) => {
-    return middlewareDeleteSession(params?.id as string);
+    return deleteSession(params?.id as string);
   },
 
-  // Authentication status
   "GET /api/auth/status/:sessionId": async (_req, params) => {
-    return middlewareGetAuthStatus(params?.sessionId);
+    return getAuthStatus(params?.sessionId);
   },
 
-  // Messages
   "GET /api/messages/:sessionId": async (_req, params) => {
     const url = new URL(_req.url);
     const limit = parseInt(url.searchParams.get("limit") || "100", 10);
     const offset = parseInt(url.searchParams.get("offset") || "0", 10);
-    return middlewareGetMessages(params?.sessionId as string, limit, offset);
+    return getMessages(params?.sessionId as string, limit, offset);
   },
 
-  // Statistics
   "GET /api/stats": async () => {
-    return middlewareGetOverallStats();
+    return getOverallStats();
   },
 
   "GET /api/stats/:sessionId": async (_req, params) => {
-    return middlewareGetSessionStats(params?.sessionId as string);
+    return getSessionStats(params?.sessionId as string);
   },
 
-  // Network state
   "GET /api/network": async () => {
-    return middlewareGetNetworkState();
+    return getNetworkState();
   },
 
-  // Config endpoint (read-only)
   "GET /api/config": async () => {
-    return middlewareGetConfig();
+    return getConfig();
   },
 };
 
-// ============================================================================
-// Route Matching
-// ============================================================================
-
-/**
- * Match route pattern with path
- */
 function matchRoute(
   method: string,
   path: string,
@@ -264,12 +179,10 @@ function matchRoute(
 } | null {
   const routeKey = `${method} ${path}`;
 
-  // Exact match
   if (routes[routeKey]) {
     return { handler: routes[routeKey], params: {} };
   }
 
-  // Pattern match with parameters
   for (const [pattern, handler] of Object.entries(routes)) {
     const [routeMethod, routePath] = pattern.split(" ");
     if (routeMethod !== method) continue;
@@ -299,13 +212,6 @@ function matchRoute(
   return null;
 }
 
-// ============================================================================
-// API Request Handler
-// ============================================================================
-
-/**
- * Handle API request by matching route and delegating to middleware
- */
 export async function handleApiRequest(req: Request): Promise<ApiResponse> {
   const url = new URL(req.url);
   const path = url.pathname;
@@ -326,5 +232,3 @@ export async function handleApiRequest(req: Request): Promise<ApiResponse> {
     };
   }
 }
-
-export { runtimeStats };

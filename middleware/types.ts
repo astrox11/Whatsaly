@@ -1,9 +1,3 @@
-/**
- * Shared Types and Interfaces for the Middleware Layer
- *
- * Provides domain-friendly structures for normalizing WhatsApp events.
- */
-
 import type { WASocket, WAMessage, proto } from "baileys";
 
 /** Type of incoming WhatsApp event */
@@ -134,4 +128,73 @@ export interface MiddlewareEvents {
   message_delete: (event: NormalizedEvent<MessageDeletePayload>) => void;
   credentials: (event: NormalizedEvent<void>) => void;
   error: (error: Error, context: string) => void;
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+export interface SessionData {
+  id: string;
+  phoneNumber: string;
+  status: string;
+  createdAt?: number;
+  pushName?: string;
+}
+
+export interface SessionCreateResult {
+  id: string;
+  pairingCode: string | null;
+  pairingCodeFormatted: string | null;
+}
+
+export interface AuthStatusData {
+  sessionId: string;
+  phoneNumber: string;
+  status: string;
+  isAuthenticated: boolean;
+  isPairing: boolean;
+}
+
+export interface SessionStatsData {
+  session: SessionData;
+  messages: number;
+  uptime: number;
+  uptimeFormatted: string;
+  hourlyActivity: number[];
+  avgMessagesPerHour: number;
+}
+
+export interface OverallStatsData {
+  totalSessions: number;
+  activeSessions: number;
+  totalMessages: number;
+  version: string;
+  serverUptime: number;
+  serverUptimeFormatted: string;
+}
+
+export interface MessagesData {
+  messages: Array<{ id: string; message: unknown }>;
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface ConfigData {
+  version: string;
+  defaultBotName: string;
+}
+
+export interface GroupData {
+  id: string;
+  subject: string;
+  participantCount: number;
+}
+
+export interface GroupsData {
+  groups: GroupData[];
+  count: number;
 }

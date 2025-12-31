@@ -1,6 +1,6 @@
 {
-  "name": "Whatsaly",
-  "version": "1.0.0",
+  "name": "whatsaly",
+  "version": "0.0.1",
   "description": "A full WhatsApp runtime with backend service and web dashboard",
   "type": "module",
   "devDependencies": {
@@ -24,7 +24,7 @@
     "web:dev": "cd service && npx astro dev",
     "web:build": "cd service && npx astro build",
     "dev": "concurrently --kill-others \"bun run server\" \"bun run web:dev\"",
-    "postinstall": "bun run hooks.ts",
+    "postinstall": "bun run hooks/index.ts",
     "lint": "eslint . --ext .ts --fix",
     "format": "prettier --write ."
   },
