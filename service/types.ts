@@ -61,7 +61,8 @@ export interface OverallStatsData {
 export interface MessagesData {
   messages: Array<{
     id: string;
-    message: unknown;
+    /** The WhatsApp message content (serialized WAMessage from baileys) */
+    message: Record<string, unknown>;
   }>;
   total: number;
 }
