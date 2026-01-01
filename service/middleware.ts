@@ -154,16 +154,16 @@ export async function createSession(
 ): Promise<ApiResponse<SessionCreateResult>> {
   const result = await sessionManager.create(phoneNumber);
 
-  if (!result.success) {
-    return { success: false, error: result.error };
+  if (!result.success || !result.id) {
+    return { success: false, error: result.error || "Failed to create session" };
   }
 
-  runtimeStats.initSession(result.id!);
+  runtimeStats.initSession(result.id);
 
   return {
     success: true,
     data: {
-      id: result.id!,
+      id: result.id,
       code: result.code,
     },
   };
