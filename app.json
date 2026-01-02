@@ -1,0 +1,30 @@
+{
+  "name": "wa-bridge",
+  "description": "WhatsApp Bridge Application",
+  "stack": "container",
+  "env": {
+    "BOT_NAME": {
+      "description": "Name of the bot",
+      "value": "Whatsaly"
+    },
+    "API_PORT": {
+      "description": "Port for the API server",
+      "value": "3000"
+    },
+    "API_HOST": {
+      "description": "Host for the API server",
+      "value": "0.0.0.0"
+    },
+    "DEBUG": {
+      "description": "Enable debug mode",
+      "value": "false"
+    }
+  },
+  "keywords": ["whatsapp runtime", "whatsapp bot", "whatsapp api", "whatsaly"],
+  "repository": "https://github.com/astrox11/Whatsaly",
+  "addons": [
+    {
+      "plan": "heroku-postgresql"
+    }
+  ]
+}
