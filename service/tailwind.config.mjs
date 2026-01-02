@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
-  darkMode: 'class',
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -69,12 +69,12 @@ export default {
         4.5: "18px",
       },
       animation: {
-        'ghost-pulse': 'ghost-pulse 1.5s ease-in-out infinite',
+        "ghost-pulse": "ghost-pulse 1.5s ease-in-out infinite",
       },
       keyframes: {
-        'ghost-pulse': {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.4' },
+        "ghost-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.4" },
         },
       },
     },

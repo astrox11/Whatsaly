@@ -162,7 +162,13 @@ export const syncGroupMetadata = async (
 
 export const getAllGroups = function (
   sessionId: string,
-): Array<{ id: string; subject: string; participantCount: number; isCommunity?: boolean; linkedParent?: string }> {
+): Array<{
+  id: string;
+  subject: string;
+  participantCount: number;
+  isCommunity?: boolean;
+  linkedParent?: string;
+}> {
   const tableName = getGroupsTable(sessionId);
   const rows = bunql.query<{ id: string; data: string }>(
     `SELECT id, data FROM "${tableName}"`,

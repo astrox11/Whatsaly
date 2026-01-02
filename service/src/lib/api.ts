@@ -81,7 +81,9 @@ export interface StatsUpdate {
   type: "stats";
   data: {
     overall: RuntimeStats;
-    sessions: Array<Session & { stats: SessionStats; hourlyActivity: HourlyActivity }>;
+    sessions: Array<
+      Session & { stats: SessionStats; hourlyActivity: HourlyActivity }
+    >;
   };
 }
 
@@ -199,7 +201,9 @@ class WsApiClient {
   private async fetchFullStats(): Promise<void> {
     try {
       const response = await fetch(`${this.getApiBaseUrl()}/api/stats/full`);
-      const result = (await response.json()) as ApiResponse<StatsUpdate["data"]>;
+      const result = (await response.json()) as ApiResponse<
+        StatsUpdate["data"]
+      >;
 
       if (result.success && result.data) {
         const statsUpdate: StatsUpdate = {

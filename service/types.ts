@@ -210,7 +210,12 @@ export interface StatsUpdate {
   type: "stats";
   data: {
     overall: OverallStatsData;
-    sessions: Array<SessionData & { stats: SessionStatsData; hourlyActivity: HourlyActivityData }>;
+    sessions: Array<
+      SessionData & {
+        stats: SessionStatsData;
+        hourlyActivity: HourlyActivityData;
+      }
+    >;
   };
 }
 

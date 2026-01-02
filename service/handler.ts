@@ -1,5 +1,12 @@
 import { log } from "../core";
-import type { ApiResponse, WsRequest, WsResponse, WsAction, ActivitySettingsData, GroupActionType } from "./types";
+import type {
+  ApiResponse,
+  WsRequest,
+  WsResponse,
+  WsAction,
+  ActivitySettingsData,
+  GroupActionType,
+} from "./types";
 import { WsResponseErrors } from "./errors";
 import {
   validateWsRequest,

@@ -11,7 +11,13 @@ import {
   Community,
 } from "../core";
 import config from "../config";
-import type { SessionStatsData, OverallStatsData, ActivitySettingsData, HourlyActivityData, GroupActionType } from "./types";
+import type {
+  SessionStatsData,
+  OverallStatsData,
+  ActivitySettingsData,
+  HourlyActivityData,
+  GroupActionType,
+} from "./types";
 
 class RuntimeStats {
   getStats(sessionId: string): SessionStatsData {
@@ -445,12 +451,20 @@ export function getGroupMetadata(sessionId: string, groupId: string) {
         joinApprovalMode: metadata.joinApprovalMode,
         isCommunity: metadata.isCommunity,
         size: metadata.size || metadata.participants?.length || 0,
-        participants: (metadata.participants || []).map((p: { id: string; admin?: string | null; isAdmin?: boolean; isSuperAdmin?: boolean }) => ({
-          id: p.id,
-          admin: p.admin,
-          isAdmin: p.isAdmin || p.admin === "admin" || p.admin === "superadmin",
-          isSuperAdmin: p.isSuperAdmin || p.admin === "superadmin",
-        })),
+        participants: (metadata.participants || []).map(
+          (p: {
+            id: string;
+            admin?: string | null;
+            isAdmin?: boolean;
+            isSuperAdmin?: boolean;
+          }) => ({
+            id: p.id,
+            admin: p.admin,
+            isAdmin:
+              p.isAdmin || p.admin === "admin" || p.admin === "superadmin",
+            isSuperAdmin: p.isSuperAdmin || p.admin === "superadmin",
+          }),
+        ),
         ephemeralDuration: metadata.ephemeralDuration,
         inviteCode: metadata.inviteCode,
       },
@@ -458,7 +472,8 @@ export function getGroupMetadata(sessionId: string, groupId: string) {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to get group metadata",
+      error:
+        error instanceof Error ? error.message : "Failed to get group metadata",
     };
   }
 }
@@ -491,10 +506,12 @@ export async function executeGroupAction(
     const group = new Group(sessionId, groupId, client);
     const metadata = GetGroupMeta(sessionId, groupId);
     const isCommunity = metadata?.isCommunity || false;
-    
+
     // For community-specific actions, use the Community class
-    const community = isCommunity ? new Community(sessionId, groupId, client) : null;
-    
+    const community = isCommunity
+      ? new Community(sessionId, groupId, client)
+      : null;
+
     let result: unknown;
     let message = "Action completed successfully";
 
@@ -601,12 +618,17 @@ export async function executeGroupAction(
         if (!params?.participant || typeof params.participant !== "string") {
           return { success: false, error: "Participant number is required" };
         }
-        const promoteParticipant = params.participant.includes("@s.whatsapp.net")
+        const promoteParticipant = params.participant.includes(
+          "@s.whatsapp.net",
+        )
           ? params.participant
           : params.participant + "@s.whatsapp.net";
         result = await group.Promote(promoteParticipant);
         if (result === null) {
-          return { success: false, error: "User not in group or already admin" };
+          return {
+            success: false,
+            error: "User not in group or already admin",
+          };
         }
         message = "Participant promoted to admin";
         break;
@@ -626,12 +648,16 @@ export async function executeGroupAction(
         break;
 
       case "ephemeral":
-        const duration = typeof params?.duration === "number" ? params.duration : parseInt(String(params?.duration));
+        const duration =
+          typeof params?.duration === "number"
+            ? params.duration
+            : parseInt(String(params?.duration));
         const acceptedDurations = [0, 86400, 604800, 7776000];
         if (isNaN(duration) || !acceptedDurations.includes(duration)) {
           return {
             success: false,
-            error: "Invalid duration. Accepted values: 0 (off), 86400 (1 day), 604800 (7 days), 7776000 (90 days)",
+            error:
+              "Invalid duration. Accepted values: 0 (off), 86400 (1 day), 604800 (7 days), 7776000 (90 days)",
           };
         }
         if (isCommunity && community) {
@@ -642,14 +668,22 @@ export async function executeGroupAction(
         if (result === null) {
           return { success: false, error: "Already set to this duration" };
         }
-        message = duration === 0 ? "Disappearing messages disabled" : `Disappearing messages set to ${duration} seconds`;
+        message =
+          duration === 0
+            ? "Disappearing messages disabled"
+            : `Disappearing messages set to ${duration} seconds`;
         break;
 
       case "addMode":
-        if (!params?.mode || (params.mode !== "admin" && params.mode !== "member")) {
+        if (
+          !params?.mode ||
+          (params.mode !== "admin" && params.mode !== "member")
+        ) {
           return { success: false, error: "Mode must be 'admin' or 'member'" };
         }
-        result = await group.MemberJoinMode(params.mode === "admin" ? "admin_add" : "all_member_add");
+        result = await group.MemberJoinMode(
+          params.mode === "admin" ? "admin_add" : "all_member_add",
+        );
         if (result === null) {
           return { success: false, error: "Already set to this mode" };
         }
@@ -657,10 +691,15 @@ export async function executeGroupAction(
         break;
 
       case "joinMode":
-        if (!params?.mode || (params.mode !== "approval" && params.mode !== "open")) {
+        if (
+          !params?.mode ||
+          (params.mode !== "approval" && params.mode !== "open")
+        ) {
           return { success: false, error: "Mode must be 'approval' or 'open'" };
         }
-        result = await group.GroupJoinMode(params.mode === "approval" ? "on" : "off");
+        result = await group.GroupJoinMode(
+          params.mode === "approval" ? "on" : "off",
+        );
         if (result === null) {
           return { success: false, error: "Already set to this mode" };
         }
@@ -669,28 +708,47 @@ export async function executeGroupAction(
 
       case "linkGroup":
         if (!isCommunity || !community) {
-          return { success: false, error: "This action is only available for communities" };
+          return {
+            success: false,
+            error: "This action is only available for communities",
+          };
         }
-        if (!params?.targetGroupId || typeof params.targetGroupId !== "string") {
+        if (
+          !params?.targetGroupId ||
+          typeof params.targetGroupId !== "string"
+        ) {
           return { success: false, error: "Target group ID is required" };
         }
         result = await community.LinkGroup(params.targetGroupId);
         if (result === null) {
-          return { success: false, error: "Failed to link group - not an admin or group already linked" };
+          return {
+            success: false,
+            error:
+              "Failed to link group - not an admin or group already linked",
+          };
         }
         message = "Group linked to community";
         break;
 
       case "unlinkGroup":
         if (!isCommunity || !community) {
-          return { success: false, error: "This action is only available for communities" };
+          return {
+            success: false,
+            error: "This action is only available for communities",
+          };
         }
-        if (!params?.targetGroupId || typeof params.targetGroupId !== "string") {
+        if (
+          !params?.targetGroupId ||
+          typeof params.targetGroupId !== "string"
+        ) {
           return { success: false, error: "Target group ID is required" };
         }
         result = await community.UnlinkGroup(params.targetGroupId);
         if (result === null) {
-          return { success: false, error: "Failed to unlink group - not an admin or group not linked" };
+          return {
+            success: false,
+            error: "Failed to unlink group - not an admin or group not linked",
+          };
         }
         message = "Group unlinked from community";
         break;
@@ -710,7 +768,10 @@ export async function executeGroupAction(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to execute group action",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to execute group action",
     };
   }
 }

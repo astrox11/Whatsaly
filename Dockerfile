@@ -12,22 +12,12 @@ RUN apt-get update && apt-get install -y \
 
 RUN node -v && npm -v && bun -v
 
-# Clone and setup Whatsaly backend
-RUN git clone https://github.com/astrox11/wa-runtime /root/Whatsaly
+RUN git clone https://github.com/astrox11/Whatsaly /root/Whatsaly
 
 WORKDIR /root/Whatsaly
 
 RUN bun install
 
-# Install and build frontend
-WORKDIR /root/Whatsaly/service
-RUN npm install
-RUN npm run build
-
-WORKDIR /root/Whatsaly
-
-# Expose ports for backend (3000) and frontend (4321)
 EXPOSE 3000 4321
 
-# Start both backend and frontend
-CMD ["sh", "-c", "bun run server & cd service && npm start"]
+CMD ["sh", "-c", "bun start"]

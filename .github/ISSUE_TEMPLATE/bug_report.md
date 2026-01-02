@@ -23,7 +23,7 @@ Steps to reliably reproduce the behavior:
 
 ### Expected behavior
 
-Describe what you expected AstroBridge to do instead.
+Describe what you expected Whatsaly to do instead.
 
 ### Actual behavior
 

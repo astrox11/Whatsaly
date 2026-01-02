@@ -425,7 +425,10 @@ class SessionManager {
       try {
         runtime.client.end(undefined);
       } catch (error) {
-        log.debug(`Error ending existing client for session ${sessionId}:`, error);
+        log.debug(
+          `Error ending existing client for session ${sessionId}:`,
+          error,
+        );
       }
       runtime.client = null;
     }
