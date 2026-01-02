@@ -613,7 +613,7 @@ const hashedId = hashSessionId(id || "");
     const maxValue = Math.max(...hourlyActivity.hourlyData, 1);
 
     // Generate chart bars
-    const bars = hourlyActivity.hourlyData.map((count, index) => {
+    const bars = hourlyActivity.hourlyData.map((count) => {
       const heightPercent = (count / maxValue) * 100;
       const minHeight = count > 0 ? 4 : 2; // Minimum height for visibility
       const height = Math.max(heightPercent, minHeight);
