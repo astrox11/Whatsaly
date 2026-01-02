@@ -1845,7 +1845,7 @@ const hashedId = hashSessionId(id || "");
                 checkIcon.classList.add("hidden");
                 copyBtn.setAttribute("data-tooltip", "Copy Link");
                 copyBtn.classList.remove("text-gh-success");
-              }, 3000);
+              }, 8000);
             } catch (err) {
               console.error("Failed to copy:", err);
               // Try fallback on error
@@ -1870,7 +1870,7 @@ const hashedId = hashSessionId(id || "");
                   checkIcon.classList.add("hidden");
                   copyBtn.setAttribute("data-tooltip", "Copy Link");
                   copyBtn.classList.remove("text-gh-success");
-                }, 3000);
+                }, 8000);
               } catch (fallbackErr) {
                 console.error("Fallback copy also failed:", fallbackErr);
               }

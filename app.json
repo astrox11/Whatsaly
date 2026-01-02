@@ -7,14 +7,6 @@
       "description": "Name of the bot",
       "value": "Whatsaly"
     },
-    "API_PORT": {
-      "description": "Port for the API server",
-      "value": "3000"
-    },
-    "API_HOST": {
-      "description": "Host for the API server",
-      "value": "0.0.0.0"
-    },
     "DEBUG": {
       "description": "Enable debug mode",
       "value": "false"

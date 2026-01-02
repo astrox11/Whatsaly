@@ -192,8 +192,8 @@ class WsApiClient {
 
   private getApiBaseUrl(): string {
     let host = window.location.host;
-    if (window.location.port === "4321") {
-      host = `${window.location.hostname}:3000`;
+    if (window.location.port === "8000") {
+      host = `${window.location.hostname}:8000`;
     }
     return `${window.location.protocol}//${host}`;
   }
@@ -248,8 +248,8 @@ class WsApiClient {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       let wsHost = window.location.host;
 
-      if (window.location.port === "4321") {
-        wsHost = `${window.location.hostname}:3000`;
+      if (window.location.port === "8000") {
+        wsHost = `${window.location.hostname}:8000`;
       }
 
       const wsUrl = `${protocol}//${wsHost}/ws/stats`;
@@ -297,7 +297,7 @@ class WsApiClient {
           console.log("Reconnecting in 3 seconds...");
           this.reconnectTimeout = setTimeout(() => {
             this.connect();
-          }, 3000);
+          }, 8000);
         }
       };
     });
@@ -334,7 +334,7 @@ class WsApiClient {
             this.pendingRequests.delete(requestId);
             reject(new Error("Request timeout"));
           }
-        }, 30000);
+        }, 80000);
       });
 
       return {
@@ -460,7 +460,7 @@ class WsApiClient {
             this.pendingRequests.delete(requestId);
             reject(new Error("Request timeout"));
           }
-        }, 30000);
+        }, 80000);
       });
 
       return response;

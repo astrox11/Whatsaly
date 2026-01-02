@@ -9,9 +9,5 @@ services:
     envVars:
       - key: BOT_NAME
         sync: false
-      - key: API_PORT
-        sync: false
-      - key: API_HOST
-        sync: false
       - key: DEBUG
         sync: false

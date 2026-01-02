@@ -24,7 +24,7 @@ import type { WsRequest } from "./service/types";
 const wsClients: Set<any> = new Set();
 
 const STATIC_DIR = join(import.meta.dir, "service", "dist", "client");
-const ASTRO_SERVER_URL = "http://localhost:4321";
+const ASTRO_SERVER_URL = "http://localhost:8000";
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html",
@@ -116,7 +116,7 @@ async function proxyToAstro(req: Request): Promise<Response> {
 
 const server = Bun.serve({
   port: config.API_PORT,
-  hostname: config.API_HOST,
+  hostname: "0.0.0.0",
   async fetch(req, server) {
     const url = new URL(req.url);
     const path = url.pathname;

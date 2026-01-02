@@ -149,8 +149,8 @@ const { id } = Astro.params;
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       let wsHost = window.location.host;
 
-      if (window.location.port === "4321") {
-        wsHost = `${window.location.hostname}:3000`;
+      if (window.location.port === "8000") {
+        wsHost = `${window.location.hostname}:8000`;
       }
 
       const ws = new WebSocket(`${protocol}//${wsHost}/ws/stats`);
@@ -199,8 +199,8 @@ const { id } = Astro.params;
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
     let wsHost = window.location.host;
-    if (window.location.port === "4321") {
-      wsHost = `${window.location.hostname}:3000`;
+    if (window.location.port === "8000") {
+      wsHost = `${window.location.hostname}:8000`;
     }
 
     const ws = new WebSocket(`${protocol}//${wsHost}/ws/stats`);
@@ -308,7 +308,7 @@ const { id } = Astro.params;
 
         attempts++;
         if (attempts < maxAttempts) {
-          setTimeout(poll, 3000);
+          setTimeout(poll, 8000);
         } else {
           showError("Pairing timed out. Please try again.");
         }
@@ -316,7 +316,7 @@ const { id } = Astro.params;
         console.error("Poll error:", error);
         attempts++;
         if (attempts < maxAttempts) {
-          setTimeout(poll, 3000);
+          setTimeout(poll, 8000);
         } else {
           showError(
             "Connection error. Please check your network and try again."

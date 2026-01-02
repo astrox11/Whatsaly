@@ -9,22 +9,22 @@ export default defineConfig({
   }),
   integrations: [tailwind()],
   server: {
-    port: 4321,
+    port: 8000,
     host: true,
   },
   vite: {
     server: {
       proxy: {
         "/api": {
-          target: "http://localhost:3000",
+          target: "http://localhost:8000",
           changeOrigin: true,
         },
         "/health": {
-          target: "http://localhost:3000",
+          target: "http://localhost:8000",
           changeOrigin: true,
         },
         "/ws": {
-          target: "ws://localhost:3000",
+          target: "ws://localhost:8000",
           ws: true,
           changeOrigin: true,
         },

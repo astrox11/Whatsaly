@@ -18,6 +18,6 @@ WORKDIR /root/Whatsaly
 
 RUN bun install
 
-EXPOSE 3000 4321
+EXPOSE 8000 8000
 
 CMD ["sh", "-c", "bun start"]
