@@ -769,6 +769,35 @@ const hashedId = hashSessionId(id || "");
       </div>
     </div>
   </div>
+
+  <!-- Confirmation Modal -->
+  <div id="confirm-modal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/50" id="confirm-modal-backdrop"></div>
+    <div
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-gh-bg border border-gh-border rounded-gh shadow-xl"
+    >
+      <div class="p-4 border-b border-gh-border">
+        <h2 id="confirm-modal-title" class="text-sm font-semibold text-gh-text">Confirm Action</h2>
+      </div>
+      <div class="p-4">
+        <p id="confirm-modal-message" class="text-sm text-gh-text-secondary mb-4"></p>
+        <div class="flex gap-2">
+          <button
+            id="confirm-modal-cancel"
+            class="flex-1 py-1.5 px-4 text-sm font-medium rounded-gh bg-gh-bg-secondary border border-gh-border text-gh-text hover:bg-gh-bg-tertiary transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirm-modal-confirm"
+            class="flex-1 py-1.5 px-4 text-sm font-medium rounded-gh bg-gh-danger text-white hover:bg-red-700 transition-colors"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </Layout>
 
 <script>
@@ -1479,12 +1508,12 @@ const hashedId = hashSessionId(id || "");
       const action = actionBtn.getAttribute("data-action");
       if (action) {
         if (action === "leave" || action === "kickAll") {
-          const confirmed = confirm(
-            action === "leave"
-              ? "Are you sure you want to leave this group?"
-              : "Are you sure you want to kick all non-admin members?"
-          );
-          if (!confirmed) return;
+          const title = action === "leave" ? "Leave Group" : "Kick All Members";
+          const message = action === "leave"
+            ? "Are you sure you want to leave this group?"
+            : "Are you sure you want to kick all non-admin members?";
+          showConfirmModal(title, message, action);
+          return;
         }
         await executeGroupAction(action);
       }
@@ -1950,6 +1979,41 @@ const hashedId = hashSessionId(id || "");
 
   actionResultModalBackdrop?.addEventListener("click", () => {
     actionResultModal?.classList.add("hidden");
+  });
+
+  // Confirmation Modal
+  const confirmModal = document.getElementById("confirm-modal");
+  const confirmModalBackdrop = document.getElementById("confirm-modal-backdrop");
+  const confirmModalTitle = document.getElementById("confirm-modal-title");
+  const confirmModalMessage = document.getElementById("confirm-modal-message");
+  const confirmModalCancel = document.getElementById("confirm-modal-cancel");
+  const confirmModalConfirm = document.getElementById("confirm-modal-confirm");
+
+  let pendingConfirmAction: string | null = null;
+
+  function showConfirmModal(title: string, message: string, action: string) {
+    if (confirmModalTitle) confirmModalTitle.textContent = title;
+    if (confirmModalMessage) confirmModalMessage.textContent = message;
+    pendingConfirmAction = action;
+    confirmModal?.classList.remove("hidden");
+  }
+
+  confirmModalCancel?.addEventListener("click", () => {
+    confirmModal?.classList.add("hidden");
+    pendingConfirmAction = null;
+  });
+
+  confirmModalBackdrop?.addEventListener("click", () => {
+    confirmModal?.classList.add("hidden");
+    pendingConfirmAction = null;
+  });
+
+  confirmModalConfirm?.addEventListener("click", async () => {
+    confirmModal?.classList.add("hidden");
+    if (pendingConfirmAction) {
+      await executeGroupAction(pendingConfirmAction);
+    }
+    pendingConfirmAction = null;
   });
 
   loadGroups();
