@@ -18,7 +18,7 @@
     "typescript": "latest"
   },
   "scripts": {
-    "start": "bun run server.ts",
+    "start": "bun run ./dist/server.js",
     "dev": "concurrently --kill-others \"bun run server.ts\" \"cd service && npx astro dev --port 4321\"",
     "build": "cd service && npx astro build",
     "postinstall": "bun run hooks/index.ts",
